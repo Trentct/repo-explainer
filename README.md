@@ -11,6 +11,22 @@ A Claude Code Skill that turns any GitHub repository into **Neobrutalism-style i
   <img src="https://img.shields.io/badge/diagrams-pure_SVG-FF3D7F?style=flat-square&labelColor=000" alt="Pure SVG">
 </p>
 
+## 快速开始 / Quick Start
+
+**一行安装 / One-line install:**
+
+```bash
+git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
+```
+
+**然后在 Claude Code 里说 / Then in Claude Code:**
+
+```
+讲解仓库 https://github.com/karpathy/nanogpt
+```
+
+就这样。/ That's it.
+
 ---
 
 ## 效果预览 / Preview
