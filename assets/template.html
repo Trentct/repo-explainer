@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<!--
+  repo-explainer — Neobrutalism slide template
+  https://github.com/Trentct/repo-explainer
+
+  这个文件是模板骨架，不要手改样式。使用方式见 SKILL.md Step 3：
+    1. cp assets/template.html <输出路径>
+    2. 替换 html 标签的 lang 和 title 两个双花括号占位符
+    3. 用 Edit 把幻灯片 section 插到 SLIDES 注释占位符处
+    4. 用 Edit 把 SVG 绘制代码插到 DIAGRAMS 注释占位符处
+-->
+<html lang="{{LANG}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{TITLE}}</title>
+
+  <!-- 字体：CN 环境下 Google Fonts 常被墙，字体栈里已内置系统字体兜底 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style id="brutal-css">
+    :root {
+      --yellow: #FFDD00;
+      --blue: #2E5EFF;
+      --pink: #FF3D7F;
+      --green: #00D26A;
+      --black: #000000;
+      --paper: #FFFCF0;
+      --paper-alt: #F4F1E4;
+      --ink-dim: #2a2a2a;
+      --ink-muted: #666;
+      --display: 'Archivo Black', 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --body: 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+      --border: 3px solid var(--black);
+      --border-thick: 5px solid var(--black);
+      --shadow: 8px 8px 0 var(--black);
+      --shadow-sm: 4px 4px 0 var(--black);
+      --shadow-lg: 12px 12px 0 var(--black);
+    }
+
+    html, body { background: var(--paper); }
+    .reveal-viewport { background: var(--paper); }
+    .reveal { font-family: var(--body); color: var(--black); font-size: 22px; }
+    /* border-box 是必须的：画布固定 1280 宽，section 带 30px 左右内边距，
+       content-box 下实际宽度会变成 1340 —— 整页右移、右边溢出画布，
+       表现为「左右不均匀」。下面这些带 padding 的容器同理。 */
+    .reveal .slides section,
+    .reveal .brutal-card,
+    .reveal pre,
+    .reveal blockquote,
+    .reveal .dialog-row,
+    .reveal .step,
+    .reveal .step-text,
+    .reveal .grid-2, .reveal .grid-3, .reveal .grid-asymmetric,
+    .reveal .diagram-container { box-sizing: border-box; }
+    .reveal section { text-align: left; padding: 10px 30px; }
+
+    /* Typography — BRUTAL */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--display);
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      color: var(--black);
+      font-weight: 900;
+      line-height: 0.95;
+    }
+    .reveal h1 { font-size: 6em; margin-bottom: 0.15em; letter-spacing: -0.03em; }
+    .reveal h2 { font-size: 2.6em; margin-bottom: 0.5em; display: inline-block; background: var(--yellow); padding: 0.1em 0.4em; border: var(--border-thick); box-shadow: var(--shadow); }
+    .reveal h3 { font-size: 1.4em; letter-spacing: 0.02em; margin-bottom: 0.4em; color: var(--black); }
+    .reveal p { font-family: var(--body); font-size: 0.85em; line-height: 1.55; color: var(--ink-dim); font-weight: 500; }
+    .reveal ul, .reveal ol { font-size: 0.82em; line-height: 1.55; margin-left: 1.2em; color: var(--ink-dim); font-weight: 500; }
+    .reveal li { margin-bottom: 0.35em; }
+    .reveal li::marker { color: var(--black); font-weight: 900; }
+    .reveal strong { color: var(--black); background: var(--yellow); padding: 0 0.15em; font-weight: 700; }
+    .reveal em { font-style: normal; background: var(--pink); color: var(--black); padding: 0 0.2em; font-weight: 600; }
+    .reveal a { color: var(--black); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 3px; font-weight: 700; }
+
+    /* Code — BRUTAL */
+    .reveal code { font-family: var(--mono); color: var(--black); background: var(--yellow); padding: 0.1em 0.35em; border: 2px solid var(--black); font-size: 0.85em; font-weight: 600; }
+    /* width/margin 覆盖 theme/white.css 的 `width:90%; margin:auto`（否则代码块会居中，
+       跟左对齐的正文错位） */
+    .reveal pre { background: var(--paper-alt); border: var(--border-thick); padding: 1em 1.2em; font-size: 0.5em; box-shadow: var(--shadow); position: relative; width: 100%; margin: 1.5em 0 0.5em 0; }
+    .reveal pre::before {
+      content: attr(data-label);
+      position: absolute;
+      top: -18px;
+      left: -5px;
+      background: var(--black);
+      color: var(--yellow);
+      padding: 0.15em 0.6em;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 1.3em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 3px solid var(--black);
+    }
+    .reveal pre code { font-family: var(--mono); color: var(--black); background: none; border: none; padding: 0; line-height: 1.7; font-weight: 500; max-height: none; }
+
+    /* Blockquote — BIG STATEMENT
+       width/margin/font-style/box-shadow 是明确覆盖 theme/white.css 的
+       `width:70%; margin:auto; font-style:italic; background:rgba(255,255,255,.05)`，
+       不写死这几条就会变成居中 + 米白字压白底（看不见） */
+    .reveal blockquote {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      margin: 0 0 0.6em 0;
+      border: var(--border-thick);
+      background: var(--black);
+      color: var(--paper);
+      padding: 0.8em 1.2em;
+      border-radius: 0;
+      font-family: var(--display);
+      font-size: 1.5em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      box-shadow: var(--shadow);
+      font-style: normal;
+      letter-spacing: -0.01em;
+    }
+    .reveal blockquote p { color: var(--paper); font-size: 1em; margin: 0; }
+    .reveal blockquote p:first-child, .reveal blockquote p:last-child { display: block; }
+
+    /* Brutal cards */
+    .brutal-card {
+      border: var(--border);
+      padding: 1em 1.2em;
+      background: white;
+      box-shadow: var(--shadow);
+      border-radius: 0;
+    }
+    .brutal-card.yellow { background: var(--yellow); }
+    .brutal-card.blue { background: var(--blue); color: var(--paper); }
+    .brutal-card.blue * { color: var(--paper); }
+    .brutal-card.pink { background: var(--pink); }
+    .brutal-card.green { background: var(--green); }
+    .brutal-card.black { background: var(--black); color: var(--paper); }
+    .brutal-card.black * { color: var(--paper); }
+    .brutal-card.tilt-left { transform: rotate(-1.5deg); }
+    .brutal-card.tilt-right { transform: rotate(1.5deg); }
+
+    /* Dialog — brutal, no bubbles */
+    .dialog-row { border: var(--border); padding: 0.5em 0.8em; margin-bottom: 0.4em; font-size: 0.75em; box-shadow: var(--shadow-sm); font-weight: 500; }
+    .dialog-row.user { background: var(--paper-alt); }
+    .dialog-row.bad { background: var(--pink); }
+    .dialog-row.good { background: var(--green); }
+    .dialog-row .role { font-family: var(--mono); font-weight: 700; text-transform: uppercase; font-size: 0.8em; letter-spacing: 0.1em; display: inline-block; margin-right: 0.5em; padding: 0 0.3em; background: var(--black); color: var(--paper); }
+
+    /* Grids */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2em; }
+    .grid-asymmetric { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5em; }
+
+    /* Tags — brutal badges */
+    .tag {
+      display: inline-block;
+      padding: 0.25em 0.7em;
+      border: var(--border);
+      background: var(--yellow);
+      color: var(--black);
+      font-family: var(--mono);
+      font-size: 0.75em;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0.2em 0.2em 0.2em 0;
+      box-shadow: var(--shadow-sm);
+    }
+    .tag.blue { background: var(--blue); color: var(--paper); }
+    .tag.pink { background: var(--pink); }
+    .tag.green { background: var(--green); }
+    .tag.black { background: var(--black); color: var(--paper); }
+
+    /* Steps — numbered blocks */
+    .step { display: flex; align-items: stretch; gap: 0; margin-bottom: 0.6em; border: var(--border); box-shadow: var(--shadow-sm); }
+    .step-num {
+      width: 56px;
+      background: var(--black);
+      color: var(--yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--display);
+      font-size: 1.8em;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .step-text { padding: 0.6em 0.9em; font-size: 0.82em; color: var(--ink-dim); line-height: 1.5; background: white; flex: 1; font-weight: 500; }
+    .step-text strong { color: var(--black); background: var(--yellow); padding: 0 0.2em; }
+
+    /* Diagram container */
+    .diagram-container { display: flex; justify-content: center; margin: 0.8em 0; width: 100%; }
+    .diagram-container svg { overflow: visible; max-width: 100%; }
+
+    /* Table — brutal */
+    .reveal table { width: 100%; border-collapse: collapse; font-size: 0.72em; border: var(--border-thick); box-shadow: var(--shadow); background: white; }
+    .reveal th {
+      background: var(--black);
+      color: var(--yellow);
+      border: 2px solid var(--black);
+      padding: 0.6em 0.9em;
+      text-align: left;
+      font-family: var(--display);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-size: 1em;
+    }
+    .reveal td { border: 2px solid var(--black); padding: 0.55em 0.9em; text-align: left; font-weight: 500; }
+    .reveal tr:nth-child(even) td { background: var(--paper-alt); }
+    .check { color: var(--black); background: var(--green); padding: 0 0.3em; font-weight: 900; }
+    .cross { color: var(--paper); background: var(--black); padding: 0 0.3em; font-weight: 900; }
+
+    /* Marker — annotation style */
+    .subtitle { font-family: var(--mono); font-size: 0.65em; color: var(--black); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+    .marker {
+      display: inline-block;
+      background: var(--pink);
+      color: var(--black);
+      padding: 0.15em 0.5em;
+      border: 2px solid var(--black);
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.8em;
+      text-transform: uppercase;
+    }
+    .stamp {
+      display: inline-block;
+      border: 3px solid var(--black);
+      padding: 0.2em 0.6em;
+      font-family: var(--display);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transform: rotate(-3deg);
+      background: var(--yellow);
+      font-size: 0.9em;
+    }
+
+    /* Big number display */
+    .big-num { font-family: var(--display); font-size: 5em; line-height: 1; color: var(--black); }
+    .big-num.yellow-bg { background: var(--yellow); padding: 0 0.1em; }
+
+    /* Reveal overrides */
+    .reveal .progress { color: var(--black); height: 6px; background: transparent; }
+    .reveal .progress span { background: var(--black); }
+    .reveal .controls { color: var(--black); }
+    .reveal .slide-number {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--paper);
+      background: var(--black);
+      padding: 4px 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    /* Decorative brutalist grid lines (optional bg) */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--black) 1px, transparent 1px),
+        linear-gradient(90deg, var(--black) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: 0.04;
+      pointer-events: none;
+    }
+
+    /* ===== 代码高亮：自带的 brutal 浅色主题 =====
+       reveal v5 只提供 monokai/zenburn 两个暗色主题，跟米白底不搭，
+       所以这里自己写一套，顺带少一个 CDN 依赖 */
+    .reveal .hljs { background: transparent; color: var(--black); }
+    .reveal .hljs-comment, .reveal .hljs-quote { color: #8a8578; font-style: italic; }
+    .reveal .hljs-keyword, .reveal .hljs-selector-tag, .reveal .hljs-literal,
+    .reveal .hljs-section, .reveal .hljs-doctag, .reveal .hljs-type { color: var(--blue); font-weight: 700; }
+    .reveal .hljs-string, .reveal .hljs-regexp, .reveal .hljs-addition { color: #c2185b; }
+    .reveal .hljs-number, .reveal .hljs-symbol, .reveal .hljs-bullet { color: #007a3d; }
+    .reveal .hljs-title, .reveal .hljs-name, .reveal .hljs-title.function_ { color: var(--black); font-weight: 700; background: var(--yellow); }
+    .reveal .hljs-built_in, .reveal .hljs-class .hljs-title { color: #6a3d9a; font-weight: 600; }
+    .reveal .hljs-attr, .reveal .hljs-attribute, .reveal .hljs-variable, .reveal .hljs-params { color: var(--ink-dim); }
+    .reveal .hljs-meta { color: #8a8578; }
+    .reveal .hljs-emphasis { font-style: italic; }
+    .reveal .hljs-strong { font-weight: 700; }
+
+    /* ===== CDN 加载失败横幅 ===== */
+    #cdn-error {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--paper);
+      padding: 48px;
+      font-family: var(--body);
+      overflow: auto;
+    }
+    #cdn-error.show { display: block; }
+    #cdn-error h1 { font-family: var(--display); font-size: 42px; text-transform: uppercase; margin: 0 0 16px; }
+    #cdn-error .box { border: 5px solid var(--black); background: var(--pink); box-shadow: 8px 8px 0 var(--black); padding: 24px; max-width: 760px; }
+    #cdn-error code { font-family: var(--mono); background: var(--yellow); border: 2px solid var(--black); padding: 1px 5px; }
+    #cdn-error ul { line-height: 1.7; margin: 12px 0 0 20px; font-weight: 500; }
+
+    /* ===== ?debug=1 溢出标记 ===== */
+    .reveal section.overflow-warn { outline: 6px dashed var(--pink); outline-offset: -6px; }
+    .reveal section.overflow-warn::after {
+      content: attr(data-overflow);
+      position: absolute; top: 0; right: 0;
+      background: var(--pink); color: var(--black);
+      border: 3px solid var(--black);
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      padding: 3px 8px; z-index: 50;
+    }
+  </style>
+</head>
+<body>
+  <div id="cdn-error">
+    <h1>幻灯片资源没加载出来</h1>
+    <div class="box">
+      <p><strong>reveal.js 的三个 CDN 都没连上</strong>（jsDelivr / Fastly / unpkg）。内容都在，只是没法翻页。</p>
+      <ul>
+        <li>如果你在中国大陆，多半是网络问题——挂个代理刷新一下</li>
+        <li>或者让 Claude 重新生成时加一句「把 reveal.js 内联进 HTML」</li>
+        <li>本机装过 npm 的话：<code>npx serve</code> 起个本地服务再打开也行</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- SLIDES -->
+
+    </div>
+  </div>
+
+  <script>
+  /* ============================================================
+     CDN 多源回退加载器
+     jsDelivr → Fastly(jsDelivr 镜像) → unpkg，任一成功即停
+     ============================================================ */
+  const CDN_BASES = [
+    'https://cdn.jsdelivr.net/npm/',
+    'https://fastly.jsdelivr.net/npm/',
+    'https://unpkg.com/',
+  ];
+
+  function loadFrom(path, kind) {
+    return new Promise((resolve, reject) => {
+      let i = 0;
+      const attempt = () => {
+        if (i >= CDN_BASES.length) return reject(new Error('all CDNs failed: ' + path));
+        const url = CDN_BASES[i++] + path;
+        let node;
+        if (kind === 'css') {
+          node = document.createElement('link');
+          node.rel = 'stylesheet';
+          node.href = url;
+        } else {
+          node = document.createElement('script');
+          node.src = url;
+        }
+        node.onload = () => resolve(url);
+        node.onerror = () => { node.remove(); attempt(); };
+        document.head.appendChild(node);
+      };
+      attempt();
+    });
+  }
+
+  /* CSS 失败不致命（内容仍可读），单独 catch 掉 */
+  /* 注意：不加载 reveal 自带的高亮主题——v5 只有 monokai/zenburn 两个暗色主题，
+     跟米白底冲突（曾经引用的 highlight/github.css 在 v5 里根本不存在，一直 404）。
+     高亮配色改为下面 <style> 里自己写的 brutal 浅色版。 */
+  const cssReady = Promise.all([
+    loadFrom('reveal.js@5/dist/reveal.css', 'css'),
+    loadFrom('reveal.js@5/dist/theme/white.css', 'css'),
+  ])
+    .catch(e => console.warn('[repo-explainer] CSS CDN 失败：', e.message))
+    /* 关键：CDN 的 <link> 是运行时 append 进 head 的，会排在本文件的 <style> 后面。
+       同优先级下后来者胜出，white.css 就会把 blockquote 改成 70% 居中 + 半透明白底、
+       把 pre 改成 90% 居中、把 h2 字号改回主题值 —— 表现为「左右不均 + 字看不清」。
+       这里把我们的 <style> 重新挂到 head 末尾，夺回层叠顺序。 */
+    .then(() => {
+      const own = document.getElementById('brutal-css');
+      if (own) document.head.appendChild(own);
+    });
+
+  /* JS 失败是致命的，显示横幅 */
+  const jsReady = loadFrom('reveal.js@5/dist/reveal.js')
+    .then(() => Promise.all([
+      loadFrom('reveal.js@5/plugin/highlight/highlight.js'),
+      loadFrom('reveal.js@5/plugin/notes/notes.js'),
+    ]));
+  </script>
+
+  <script>
+  /* ============================================================
+     BRUTAL SVG HELPERS — 纯硬边几何，无 rough.js / 无 mermaid
+     ============================================================ */
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const YELLOW = '#FFDD00';
+  const BLUE   = '#2E5EFF';
+  const PINK   = '#FF3D7F';
+  const GREEN  = '#00D26A';
+  const BLACK  = '#000000';
+  const PAPER  = '#FFFCF0';
+  const WHITE  = '#FFFFFF';
+
+  /* 深色填充自动配浅色字，省得每次手写 textColor */
+  const DARK_FILLS = new Set([BLUE, BLACK]);
+  function autoTextColor(fill) { return DARK_FILLS.has(fill) ? PAPER : BLACK; }
+
+  function el(tag, attrs = {}) {
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  }
+
+  /* ---------- 边界追踪：autoFit 用，不依赖 getBBox（隐藏页拿不到） ---------- */
+  function track(svg, x, y, w, h) {
+    const b = svg.__bounds || (svg.__bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
+    b.minX = Math.min(b.minX, x);
+    b.minY = Math.min(b.minY, y);
+    b.maxX = Math.max(b.maxX, x + w);
+    b.maxY = Math.max(b.maxY, y + h);
+  }
+
+  /* ---------- 文字宽度估算 + 自动换行（中文按 1em，西文按 0.58em） ---------- */
+  function measureWidth(text, size) {
+    let w = 0;
+    for (const ch of String(text)) {
+      w += /[一-鿿　-〿＀-￯]/.test(ch) ? size : size * 0.58;
+    }
+    return w;
+  }
+
+  /* 中英混排断行：中文按字断，英文单词整体保留。
+     不这么做的话 "分词器 Tokenizer" 会被拆成 "分词器 Tokenize" / "r" */
+  const CJK_RE = /[一-鿿　-〿＀-￯]/;
+  function tokenizeForWrap(text) {
+    const out = [];
+    let buf = '';
+    for (const ch of text) {
+      if (CJK_RE.test(ch)) {
+        if (buf) { out.push(buf); buf = ''; }
+        out.push(ch);
+      } else if (/\s/.test(ch)) {
+        if (buf) { out.push(buf); buf = ''; }
+        out.push(' ');
+      } else {
+        buf += ch;
+      }
+    }
+    if (buf) out.push(buf);
+    return out;
+  }
+
+  function wrapText(text, maxWidth, size) {
+    const src = String(text).trim();
+    if (measureWidth(src, size) <= maxWidth) return [src];
+    const lines = [];
+    let cur = '';
+    for (const t of tokenizeForWrap(src)) {
+      if (t === ' ') { if (cur) cur += ' '; continue; }
+      const next = cur + t;
+      if (cur && measureWidth(next, size) > maxWidth) { lines.push(cur.trimEnd()); cur = t; }
+      else cur = next;
+    }
+    if (cur.trim()) lines.push(cur.trimEnd());
+    return lines;
+  }
+
+  /* ---------- 基础图元 ---------- */
+  function drawText(svg, x, y, text, o = {}) {
+    const size = o.size || 16;
+    const t = el('text', { x, y, 'text-anchor': o.anchor || 'middle', fill: o.color || BLACK });
+    t.style.fontFamily = o.font || "'Space Grotesk', 'PingFang SC', sans-serif";
+    t.style.fontSize = size + 'px';
+    t.style.fontWeight = o.weight || 700;
+    if (o.uppercase) { t.style.textTransform = 'uppercase'; t.style.letterSpacing = '0.05em'; }
+    t.textContent = text;
+    svg.appendChild(t);
+    const w = measureWidth(text, size);
+    const anchor = o.anchor || 'middle';
+    const x0 = anchor === 'middle' ? x - w / 2 : anchor === 'end' ? x - w : x;
+    track(svg, x0, y - size, w, size * 1.3);
+    return t;
+  }
+
+  function drawMono(svg, x, y, text, o = {}) {
+    return drawText(svg, x, y, text, { ...o, font: "'JetBrains Mono', monospace", uppercase: o.uppercase !== false });
+  }
+
+  /*
+    drawBox — 硬边矩形 + 硬投影
+    label 传字符串会按框宽自动换行；传数组则按数组逐行渲染（自己控制断行）
+    文字行数过多时自动缩字号，保证不溢出框
+  */
+  function drawBox(svg, x, y, w, h, label, o = {}) {
+    const fill = o.fill || WHITE;
+    const stroke = o.stroke || BLACK;
+    const sw = o.strokeWidth || 3;
+    const shadowOffset = o.shadow === false ? 0 : (o.shadowOffset ?? 6);
+
+    if (shadowOffset > 0) {
+      svg.appendChild(el('rect', { x: x + shadowOffset, y: y + shadowOffset, width: w, height: h, fill: BLACK }));
+    }
+    svg.appendChild(el('rect', { x, y, width: w, height: h, fill, stroke, 'stroke-width': sw }));
+    track(svg, x, y, w + shadowOffset, h + shadowOffset);
+
+    if (label !== null && label !== undefined && label !== '') {
+      let size = o.textSize || 16;
+      const padX = o.padX ?? 12;
+      let lines;
+      if (Array.isArray(label)) {
+        lines = label;
+      } else {
+        lines = wrapText(label, w - padX * 2, size);
+        /* 撑破框高、或有整词（如长英文单词）横向超宽，就逐级缩字号，最低 10px */
+        const tooTall = (ls, s) => ls.length * s * 1.25 > h - 10;
+        const tooWide = (ls, s) => ls.some(l => measureWidth(l, s) > w - padX * 2);
+        while ((tooTall(lines, size) || tooWide(lines, size)) && size > 10) {
+          size -= 1;
+          lines = wrapText(label, w - padX * 2, size);
+        }
+      }
+      const lineH = size * 1.25;
+      const startY = y + h / 2 - (lines.length * lineH) / 2 + size * 0.92;
+      lines.forEach((line, i) => {
+        drawText(svg, x + w / 2, startY + i * lineH, line, {
+          color: o.textColor || autoTextColor(fill),
+          size,
+          weight: o.textWeight || 700,
+          font: o.textFont,
+        });
+      });
+    }
+  }
+
+  function drawArrow(svg, x1, y1, x2, y2, o = {}) {
+    const stroke = o.stroke || BLACK;
+    const sw = o.strokeWidth || 4;
+    svg.appendChild(el('line', { x1, y1, x2, y2, stroke, 'stroke-width': sw, 'stroke-linecap': 'square' }));
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const sz = o.headSize || 14;
+    const p1x = x2 - sz * Math.cos(angle - 0.5), p1y = y2 - sz * Math.sin(angle - 0.5);
+    const p2x = x2 - sz * Math.cos(angle + 0.5), p2y = y2 - sz * Math.sin(angle + 0.5);
+    svg.appendChild(el('polygon', {
+      points: `${x2},${y2} ${p1x},${p1y} ${p2x},${p2y}`,
+      fill: stroke, stroke, 'stroke-width': 1, 'stroke-linejoin': 'miter',
+    }));
+    track(svg, Math.min(x1, x2) - sz, Math.min(y1, y2) - sz, Math.abs(x2 - x1) + sz * 2, Math.abs(y2 - y1) + sz * 2);
+    if (o.label) {
+      /* 不转大写：中文没有大小写，西文转大写后会明显变宽、更容易压到相邻图元 */
+      drawMono(svg, (x1 + x2) / 2, Math.min(y1, y2) - 10, o.label, {
+        size: o.labelSize || 12, color: '#666', uppercase: false,
+      });
+    }
+  }
+
+  function drawCircle(svg, cx, cy, d, label, o = {}) {
+    const r = d / 2;
+    const fill = o.fill || WHITE;
+    const stroke = o.stroke || BLACK;
+    const sw = o.strokeWidth || 3;
+    const shadowOffset = o.shadow === false ? 0 : (o.shadowOffset ?? 5);
+    if (shadowOffset > 0) svg.appendChild(el('circle', { cx: cx + shadowOffset, cy: cy + shadowOffset, r, fill: BLACK }));
+    svg.appendChild(el('circle', { cx, cy, r, fill, stroke, 'stroke-width': sw }));
+    track(svg, cx - r, cy - r, d + shadowOffset, d + shadowOffset);
+    if (label) {
+      const size = o.textSize || 14;
+      const lines = Array.isArray(label) ? label : wrapText(label, d - 12, size);
+      const lineH = size * 1.2;
+      const startY = cy - (lines.length * lineH) / 2 + size * 0.9;
+      lines.forEach((l, i) => drawText(svg, cx, startY + i * lineH, l, {
+        color: o.textColor || autoTextColor(fill), size, weight: o.textWeight || 700,
+      }));
+    }
+  }
+
+  function drawChip(svg, x, y, text, o = {}) {
+    const size = o.size || 12;
+    const padX = 8, padY = 5;
+    const w = measureWidth(text, size) + padX * 2;
+    const h = size + padY * 2;
+    drawBox(svg, x, y, w, h, null, { fill: o.fill || YELLOW, shadowOffset: 3, strokeWidth: 2 });
+    drawMono(svg, x + w / 2, y + h / 2 + size / 3, text, {
+      size, color: o.textColor || autoTextColor(o.fill || YELLOW), weight: 700,
+    });
+    return w;
+  }
+
+  /* ============================================================
+     AUTO-LAYOUT — 优先用这些，不要手算坐标
+     全部只需要「内容数组」，间距/换行/字号/画布尺寸自动算
+     ============================================================ */
+
+  const CYCLE = [YELLOW, BLUE, GREEN];          /* 默认三色轮转，守住「单图最多 3 种高饱和色」 */
+  function norm(item, i, cycle) {
+    if (typeof item === 'string') return { label: item, fill: cycle[i % cycle.length] };
+    return { fill: cycle[i % cycle.length], ...item };
+  }
+
+  /*
+    drawFlow — 横向流程 / 数据流（最常用）
+    drawFlow(svg, ['原始文本', '分词器', 'Transformer', '输出'])
+    drawFlow(svg, [{label:'输入', fill:YELLOW}, {label:'处理'}], { arrowLabels: ['编码'] })
+  */
+  function drawFlow(svg, items, o = {}) {
+    const cycle = o.cycle || CYCLE;
+    const list = items.map((it, i) => norm(it, i, cycle));
+    const n = list.length;
+    const W = o.width || 1080;
+    const pad = o.pad ?? 10;
+    const boxH = o.boxHeight ?? 96;
+    const y = o.y ?? 20;
+    /* 箭头上有文字时按最长标签撑开间距，否则标签会压到下一个框上 */
+    const labelSize = o.labelSize || 12;
+    const widestLabel = (o.arrowLabels || []).reduce((m, s) => Math.max(m, measureWidth(s || '', labelSize)), 0);
+    const gap = o.gap ?? Math.max(62, widestLabel + 34);
+    /* 箭头标签撑宽间距后不要把方框压扁——宁可让整张图变宽，
+       autoFit 会等比缩到容器里，文字与框的比例保持不变 */
+    const boxW = Math.max(o.minBoxWidth ?? 190, (W - pad * 2 - gap * (n - 1)) / n);
+    list.forEach((it, i) => {
+      const x = pad + i * (boxW + gap);
+      drawBox(svg, x, y, boxW, boxH, it.label, { fill: it.fill, textSize: o.textSize || 18 });
+      if (i < n - 1) {
+        drawArrow(svg, x + boxW + 10, y + boxH / 2, x + boxW + gap - 8, y + boxH / 2, {
+          strokeWidth: 5, label: o.arrowLabels && o.arrowLabels[i], labelSize,
+        });
+      }
+      if (it.note) drawMono(svg, x + boxW / 2, y + boxH + 22, it.note, { size: 12, color: '#666' });
+    });
+    return y + boxH;
+  }
+
+  /*
+    drawStack — 竖向分层架构图
+    drawStack(svg, [{label:'应用层', note:'CLI / SDK'}, {label:'核心引擎'}, {label:'存储'}])
+  */
+  function drawStack(svg, layers, o = {}) {
+    const cycle = o.cycle || CYCLE;
+    const list = layers.map((it, i) => norm(it, i, cycle));
+    const W = o.width || 820;
+    const pad = o.pad ?? 10;
+    const boxH = o.boxHeight ?? 78;
+    const gap = o.gap ?? 34;
+    let y = o.y ?? 12;
+    list.forEach((it, i) => {
+      drawBox(svg, pad, y, W - pad * 2, boxH, it.label, { fill: it.fill, textSize: o.textSize || 20 });
+      if (it.note) drawMono(svg, W - pad - 14, y + boxH - 12, it.note, { size: 12, color: autoTextColor(it.fill), anchor: 'end' });
+      if (i < list.length - 1 && o.arrows !== false) {
+        drawArrow(svg, W / 2, y + boxH + 6, W / 2, y + boxH + gap - 6, { strokeWidth: 5 });
+      }
+      y += boxH + gap;
+    });
+    return y;
+  }
+
+  /*
+    drawGrid — 概念卡网格（核心概念页首选）
+    drawGrid(svg, [{label:'Attention', note:'看全文'}, ...], { cols: 3 })
+  */
+  function drawGrid(svg, items, o = {}) {
+    const cycle = o.cycle || CYCLE;
+    const list = items.map((it, i) => norm(it, i, cycle));
+    const cols = o.cols || 3;
+    const W = o.width || 1080;
+    const pad = o.pad ?? 10;
+    const gapX = o.gapX ?? 26, gapY = o.gapY ?? 26;
+    const cellW = (W - pad * 2 - gapX * (cols - 1)) / cols;
+    const cellH = o.cellHeight ?? 128;
+    list.forEach((it, i) => {
+      const x = pad + (i % cols) * (cellW + gapX);
+      const y = (o.y ?? 12) + Math.floor(i / cols) * (cellH + gapY);
+      drawBox(svg, x, y, cellW, cellH, it.label, { fill: it.fill, textSize: o.textSize || 19 });
+      if (it.note) {
+        const c = autoTextColor(it.fill);
+        wrapText(it.note, cellW - 24, 12).slice(0, 2).forEach((l, k) =>
+          drawMono(svg, x + cellW / 2, y + cellH - 26 + k * 15, l, { size: 12, color: c, uppercase: false }));
+      }
+    });
+    return (o.y ?? 12) + Math.ceil(list.length / cols) * (cellH + gapY);
+  }
+
+  /*
+    drawCompare — 左右对比，中间夹 VS
+    drawCompare(svg, {title:'手写循环', items:['慢','易错']}, {title:'用它', items:['快','稳']})
+  */
+  function drawCompare(svg, left, right, o = {}) {
+    const W = o.width || 1000;
+    const pad = o.pad ?? 10;
+    const midW = 78;
+    const colW = (W - pad * 2 - midW - 40) / 2;
+    const y = o.y ?? 12;
+    const rows = Math.max(left.items?.length || 0, right.items?.length || 0);
+    const headH = 62, rowH = 46;
+    const totalH = headH + rows * (rowH + 10);
+
+    [[left, pad, left.fill || PINK], [right, pad + colW + midW + 40, right.fill || GREEN]].forEach(([side, x, fill]) => {
+      drawBox(svg, x, y, colW, headH, side.title, { fill, textSize: 22 });
+      (side.items || []).forEach((it, i) => {
+        drawBox(svg, x, y + headH + 10 + i * (rowH + 10), colW, rowH, it, {
+          fill: WHITE, textSize: 15, shadowOffset: 4,
+        });
+      });
+    });
+    drawText(svg, pad + colW + 20 + midW / 2, y + totalH / 2 + 14, 'VS', {
+      size: 44, weight: 900, font: "'Archivo Black', sans-serif",
+    });
+    return y + totalH;
+  }
+
+  /*
+    drawTimeline — 横向时间线 / 学习路径，标签上下交替
+    drawTimeline(svg, [{label:'阶段一', note:'搭环境'}, ...])
+  */
+  function drawTimeline(svg, nodes, o = {}) {
+    const cycle = o.cycle || CYCLE;
+    const list = nodes.map((it, i) => norm(it, i, cycle));
+    const W = o.width || 1080;
+    const pad = o.pad ?? 60;
+    const cy = o.y ?? 170;
+    const d = o.nodeSize ?? 64;
+    const n = list.length;
+    const step = n > 1 ? (W - pad * 2) / (n - 1) : 0;
+
+    svg.appendChild(el('line', { x1: pad, y1: cy, x2: W - pad, y2: cy, stroke: BLACK, 'stroke-width': 6, 'stroke-linecap': 'square' }));
+    track(svg, pad, cy - 3, W - pad * 2, 6);
+
+    list.forEach((it, i) => {
+      const cx = pad + i * step;
+      drawCircle(svg, cx, cy, d, String(i + 1), { fill: it.fill, textSize: 24, textWeight: 900 });
+      const up = i % 2 === 0;
+      const lines = wrapText(it.label, o.labelWidth ?? 190, 17);
+      /* 上方标签必须整体向上生长：多行 + note 的高度要先算出来再定起点，
+         否则第二行和 note 会往下压进圆点里 */
+      const blockH = lines.length * 21 + (it.note ? 16 : 0);
+      const labelY = up
+        ? cy - d / 2 - 20 - blockH + 17
+        : cy + d / 2 + 40;
+      lines.forEach((l, k) => drawText(svg, cx, labelY + k * 21, l, { size: 17, weight: 700 }));
+      if (it.note) {
+        drawMono(svg, cx, labelY + lines.length * 21 + 3, it.note, { size: 11, color: '#666', uppercase: false });
+      }
+    });
+    return cy + d;
+  }
+
+  /*
+    autoFit — 画完必调。按追踪到的真实边界设 viewBox，
+    彻底消灭「画出画布外」和「留一大片白」
+  */
+  function autoFit(svg, o = {}) {
+    const b = svg.__bounds;
+    if (!b || b.minX === Infinity) return;
+    const pad = o.pad ?? 14;
+    const x = b.minX - pad, y = b.minY - pad;
+    const w = (b.maxX - b.minX) + pad * 2;
+    const h = (b.maxY - b.minY) + pad * 2;
+    svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+    svg.style.width = '100%';
+    svg.style.height = 'auto';
+    svg.style.maxHeight = (o.maxHeight || 430) + 'px';
+  }
+
+  /* 语法糖：拿容器 + 画 + autoFit 一条龙 */
+  function diagram(id, fn, o = {}) {
+    const svg = document.getElementById(id);
+    if (!svg) { console.warn('[repo-explainer] 找不到 SVG 容器 #' + id); return; }
+    fn(svg);
+    autoFit(svg, o);
+  }
+
+  /* ============================================================
+     溢出自检 — 内容超出 760px 会被静默截断，这里主动报出来
+     加 ?debug=1 打开可看到溢出页被粉色虚线框标记
+     ============================================================ */
+  function checkOverflow() {
+    const LIMIT = 760;
+    const debug = new URLSearchParams(location.search).has('debug');
+    const bad = [];
+    document.querySelectorAll('.reveal .slides > section').forEach((s, i) => {
+      const prev = s.style.display;
+      s.style.display = 'block';
+      const h = s.scrollHeight;
+      s.style.display = prev;
+      if (h > LIMIT + 10) {
+        bad.push(`第 ${i + 1} 页 (${h}px)`);
+        s.setAttribute('data-overflow', `OVERFLOW +${h - LIMIT}px`);
+        if (debug) s.classList.add('overflow-warn');
+      }
+    });
+    if (bad.length) {
+      console.warn(
+        `[repo-explainer] ${bad.length} 页内容溢出，底部会被截断：\n  ` + bad.join('\n  ') +
+        `\n  → 让 Claude 把这几页拆成两页；加 ?debug=1 可视化查看`
+      );
+    } else {
+      console.log('[repo-explainer] 排版自检通过，无溢出页');
+    }
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  Promise.all([jsReady, cssReady]).then(() => {
+    return Reveal.initialize({
+      hash: true,
+      plugins: [RevealHighlight, RevealNotes],
+      transition: 'none',
+      width: 1280,
+      height: 760,
+      margin: 0.05,
+      slideNumber: 'c/t',
+    });
+  }).then(() => {
+
+    // DIAGRAMS
+
+    checkOverflow();
+  }).catch(err => {
+    console.error('[repo-explainer]', err);
+    document.getElementById('cdn-error').classList.add('show');
+  });
+  </script>
+</body>
+</html>

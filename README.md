@@ -13,13 +13,19 @@ A Claude Code Skill that turns any GitHub repository into **Neobrutalism-style i
 
 ## 快速开始 / Quick Start
 
-**一行安装 / One-line install:**
+**两步搞定 / Two steps:**
 
 ```bash
+# 1. 安装 DeepWiki MCP（本 skill 唯一硬依赖）
+#    Install DeepWiki MCP (the only hard dependency)
+claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp
+
+# 2. 克隆 skill 到 Claude Code skills 目录
+#    Clone the skill into Claude Code's skills directory
 git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
 ```
 
-**然后在 Claude Code 里说 / Then in Claude Code:**
+**然后重启 Claude Code 会话，在对话里说 / Then restart your Claude Code session and say:**
 
 ```
 讲解仓库 https://github.com/karpathy/nanogpt
@@ -30,6 +36,11 @@ git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explai
 ---
 
 ## 效果预览 / Preview
+
+<p align="center">
+  <img src="assets/preview/flow.jpg" alt="Auto-layout 流程图 / auto-layout flow diagram" width="49%">
+  <img src="assets/preview/code.jpg" alt="代码逐行页 / annotated code slide" width="49%">
+</p>
 
 生成的幻灯片具有以下特点：
 
@@ -51,22 +62,66 @@ The generated slides feature:
 
 ## 安装 / Installation
 
-将 `SKILL.md` 放入你的 Claude Code skills 目录：
-
-Place `SKILL.md` into your Claude Code skills directory:
-
-```bash
-# 创建 skill 目录 / Create skill directory
-mkdir -p ~/.claude/skills/repo-explainer
-
-# 复制文件 / Copy file
-cp SKILL.md ~/.claude/skills/repo-explainer/SKILL.md
-```
-
 ### 前置要求 / Prerequisites
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
-- [DeepWiki MCP Server](https://github.com/asyncfncom/deepwiki-mcp) — 用于获取仓库信息 / for fetching repository information
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI ≥ 最近版本
+- **DeepWiki MCP**（官方，由 Cognition 托管） — 用于结构化抽取 GitHub 仓库信息 / for fetching structured repo information
+
+### Step 1 — 安装 DeepWiki MCP / Install DeepWiki MCP
+
+本 skill 强依赖 [DeepWiki MCP](https://mcp.deepwiki.com)。任选一种方式：
+
+**方式 A：HTTP transport（推荐，无需本地进程）/ HTTP transport (recommended, no local process):**
+
+```bash
+claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp
+```
+
+**方式 B：手动编辑配置 / Manual config**
+
+编辑 `~/.claude.json`（或项目的 `.mcp.json`），在 `mcpServers` 下加入：
+
+```json
+{
+  "mcpServers": {
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    }
+  }
+}
+```
+
+**验证 / Verify:**
+
+```bash
+claude mcp list           # 应该看到 deepwiki ✓ Connected
+```
+
+在 Claude Code 里发 "列出 deepwiki 工具" 或直接调用 `讲解仓库 ...` 触发即可。如果工具未就绪，本 skill 会在 Step 0 检查并提示。
+
+> ⚠️ DeepWiki 只索引**公开 GitHub 仓库**。私有仓库需用 DeepWiki 付费版（Devin）。
+> ⚠️ DeepWiki indexes **public GitHub repos only**. Private repos require DeepWiki paid tier (Devin).
+
+### Step 2 — 安装 Skill / Install the Skill
+
+```bash
+git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
+```
+
+重启 Claude Code 会话，skill 即可被自动加载（通过 `~/.claude/skills/` 约定）。
+
+Restart your Claude Code session; the skill loads automatically from `~/.claude/skills/`.
+
+**验证装好了 / Verify the install** — 在 Claude Code 里输入 `/` ，列表里能看到 `repo-explainer` 就成了。或者直接发一句 `讲解仓库 karpathy/nanoGPT` 试跑。
+
+Type `/` in Claude Code — if `repo-explainer` shows up in the list, you're set. Or just try `explain repo karpathy/nanoGPT`.
+
+### 升级 / Upgrade
+
+```bash
+cd ~/.claude/skills/repo-explainer && git pull
+```
 
 ## 使用方法 / Usage
 
@@ -86,7 +141,7 @@ Trigger in Claude Code with any of the following:
 
 | 参数 Parameter | 说明 Description | 默认值 Default |
 |---|---|---|
-| 语言 Language | 中文 / English | 中文 Chinese |
+| 语言 Language | 中文 / English / 其他 | **跟随你说话的语言** Follows your prompt language |
 | 深度 Depth | 快速 Quick (~8p) / 标准 Standard (~15p) / 深入 Deep (~25p) | 标准 Standard |
 | 聚焦 Focus | 指定模块 Specific module | 全部 All |
 
@@ -96,8 +151,10 @@ Trigger in Claude Code with any of the following:
 # 标准讲解 / Standard explanation
 /repo-explainer https://github.com/karpathy/nanochat
 
-# 英文输出 / English output
-/repo-explainer https://github.com/karpathy/nanochat 英文
+# 语言默认跟随你说话的语言，也可显式指定
+# Language follows your prompt by default; override explicitly if needed
+/repo-explainer https://github.com/karpathy/nanochat 用英文做
+explain repo https://github.com/karpathy/nanochat
 
 # 快速概览 / Quick overview
 /repo-explainer https://github.com/karpathy/nanochat 快速
@@ -105,6 +162,36 @@ Trigger in Claude Code with any of the following:
 # 聚焦模块 / Focus on module
 /repo-explainer https://github.com/karpathy/nanochat 只讲训练部分
 ```
+
+### 输出位置 / Output location
+
+默认写到**当前工作目录**；如果存在 `docs/slides/` 或 `slides/` 就写进去。想固定到别的位置，在项目根目录放一个 `.repo-explainer.json`：
+
+Defaults to the **current working directory**, or `docs/slides/` / `slides/` if either exists. To pin it elsewhere, drop a `.repo-explainer.json` in your project root:
+
+```json
+{ "outDir": "docs/slides" }
+```
+
+文件名跟随输出语言：中文 `{repo}-讲解.html`，其他语言 `{repo}-slides.html`。
+
+## 常见问题 / Troubleshooting
+
+**「这个仓库 DeepWiki 没索引过」** — DeepWiki 只对已索引的仓库有数据。打开 `https://deepwiki.com/{owner}/{repo}` 点一下索引，几分钟后重试。私有仓库需要 DeepWiki 付费版。
+
+*DeepWiki only has data for repos it has indexed. Visit `https://deepwiki.com/{owner}/{repo}` to trigger indexing, wait a few minutes, retry. Private repos need the paid tier.*
+
+**幻灯片打开是一坨堆叠的裸文本** — reveal.js 的 CDN 没连上。模板会自动依次尝试 jsDelivr → Fastly → unpkg，三个都失败时会显示提示横幅。中国大陆用户挂个代理刷新即可。
+
+*The reveal.js CDN didn't load. The template falls back jsDelivr → Fastly → unpkg and shows a banner if all three fail. Behind the GFW, use a proxy and refresh.*
+
+**某页内容显示不全 / 被截断** — 画布固定 1280×760，超出部分会被静默截断。在 URL 后加 `?debug=1` 重新打开，溢出的页会被粉色虚线框标出来，然后让 Claude 把那几页拆开。
+
+*The canvas is a fixed 1280×760 and overflow is silently clipped. Reopen with `?debug=1` appended to the URL — overflowing slides get a pink dashed outline. Then ask Claude to split them.*
+
+**字体看起来不对** — Google Fonts 被墙时会回落到系统字体（PingFang SC / Microsoft YaHei）。版式还在，只是 display 字体没那么冲。
+
+*When Google Fonts is blocked, the stack falls back to system fonts. Layout survives; the display face is just less punchy.*
 
 ## 设计系统 / Design System
 
@@ -142,6 +229,22 @@ Trigger in Claude Code with any of the following:
 
 ### SVG 图表 Helper / SVG Diagram Helpers
 
+**Auto-layout（默认用这层，只给内容数组，坐标全自动）/ Auto-layout (preferred — pass content, coordinates are computed):**
+
+| 函数 Function | 用途 Usage |
+|---|---|
+| `drawFlow(svg, items, opts)` | 横向流程 / 数据流 / Horizontal flow |
+| `drawStack(svg, layers, opts)` | 竖向分层架构 / Vertical layered architecture |
+| `drawGrid(svg, items, opts)` | 概念卡网格 / Concept card grid |
+| `drawCompare(svg, left, right, opts)` | 左右对比 + VS / Side-by-side comparison |
+| `drawTimeline(svg, nodes, opts)` | 时间线 / 学习路径 / Timeline, learning path |
+| `diagram(id, fn)` · `autoFit(svg)` | 自动裁剪画布，杜绝画出边界 / Auto-fit viewBox |
+
+自动处理：中英混排断行、装不下时缩字号、深色底自动配浅色字、三色轮转、画布裁剪。
+Handles automatically: CJK/Latin line breaking, font auto-shrink, contrast-aware text color, 3-color rotation, viewBox cropping.
+
+**底层图元 / Low-level primitives:**
+
 | 函数 Function | 用途 Usage |
 |---|---|
 | `drawBox(svg, x, y, w, h, label, opts)` | 硬边矩形 + 硬投影 / Hard-edge rect with offset shadow |
@@ -149,6 +252,26 @@ Trigger in Claude Code with any of the following:
 | `drawCircle(svg, cx, cy, d, label, opts)` | 硬边实心圆节点 / Solid circular node |
 | `drawText / drawMono` | Space Grotesk / JetBrains Mono 文字 / Typography |
 | `drawChip(svg, x, y, text, opts)` | 带阴影的徽章 / Badge with shadow |
+
+## 设计风格固化 / Style is Hard-coded
+
+本 skill 的 Neobrutalism 风格（色板、字体、组件、SVG helper）**写死在 `SKILL.md` 内**，与用户本地的 `CLAUDE.md` / 项目偏好**完全无关**。运行此 skill 总是产出统一的 brutalism 幻灯片——这是它的产品特征。如果你需要别的视觉风格，请 fork 后改 `SKILL.md` 的 CSS 段。
+
+This skill's Neobrutalism style (palette, fonts, components, SVG helpers) is **hard-coded inside `SKILL.md`** and is **independent** of any local `CLAUDE.md` or project preferences. Running this skill always produces the same brutalism slides — that's the product. If you need a different look, fork and edit the CSS block in `SKILL.md`.
+
+## 所需权限 / Required Tools
+
+`SKILL.md` 在 frontmatter 中通过 `allowed-tools` 显式声明所需工具：
+
+The skill declares its required tools in frontmatter via `allowed-tools`:
+
+| 工具 / Tool | 用途 / Purpose |
+|---|---|
+| `mcp__deepwiki__read_wiki_structure` | 读取仓库目录 / Read repo wiki structure |
+| `mcp__deepwiki__ask_question` | 针对性提问 / Targeted Q&A |
+| `Read` | 读取本地文件（路径判定时偶尔需要）/ Read local files when probing output directory |
+| `Write` | 写入生成的 HTML / Write the generated HTML |
+| `Bash` | 平台检测（`uname -s`）、目录检测（`test -d`）/ Platform & directory detection |
 
 ## 工作原理 / How It Works
 
@@ -160,21 +283,21 @@ GitHub URL → DeepWiki API → Structured Q&A → reveal.js + Pure SVG → Self
 1. **获取结构** — 通过 DeepWiki MCP 读取仓库文档结构
 2. **针对性提问** — 3-5 次 ask_question 获取关键信息（一句话总结、核心概念、架构、使用场景）
 3. **生成幻灯片** — 组织为 reveal.js 幻灯片 + 纯 SVG 硬边图表
-4. **输出文件** — 写入单个自包含 HTML 文件并自动打开
+4. **输出文件** — 从 `assets/template.html` 复制骨架、填入内容，写出单文件 HTML，做一次排版自检，再按平台给出打开命令
 
 ---
 
 1. **Get structure** — Read repo documentation structure via DeepWiki MCP
 2. **Targeted questions** — 3-5 ask_question calls to gather key info (one-liner, core concepts, architecture, use cases)
 3. **Generate slides** — Organize into reveal.js slides + pure SVG hard-edge diagrams
-4. **Output file** — Write a self-contained HTML file and auto-open in browser
+4. **Output file** — Copy the skeleton from `assets/template.html`, fill in content, write one self-contained HTML file, run a layout self-check, and print the platform-specific open command
 
 ## 技术栈 / Tech Stack
 
 - [reveal.js v5](https://revealjs.com/) — 幻灯片框架 / Presentation framework
 - **Pure SVG + custom helpers** — 硬边几何图表，无图表库依赖 / Hard-edge geometric diagrams, no chart library
 - [Google Fonts](https://fonts.google.com/) — Archivo Black / Space Grotesk / JetBrains Mono
-- [DeepWiki MCP](https://github.com/asyncfncom/deepwiki-mcp) — 仓库信息获取 / Repository information
+- [DeepWiki MCP](https://mcp.deepwiki.com) — 仓库信息获取 / Repository information（官方，Cognition 托管）
 
 ## 设计原则 / Design Principles
 
