@@ -37,17 +37,43 @@ allowed-tools:
 
 ### Step 0: 前置检查（DeepWiki MCP）
 
-本 skill 强依赖 DeepWiki MCP。如果 `mcp__deepwiki__read_wiki_structure` 和 `mcp__deepwiki__ask_question` 不可用：
+本 skill 强依赖 DeepWiki MCP，提供两个能力：**读仓库 wiki 结构** 和 **就仓库提问**。
 
-**先直接帮用户装，别只是甩一条命令让他自己去搞**——这是小白第一次用 skill 就会卡住的地方：
+**按能力找工具，不要按名字硬匹配。** 各家 harness 的 MCP 工具命名前缀不同：
+
+- Claude Code：`mcp__deepwiki__read_wiki_structure` / `mcp__deepwiki__ask_question`
+- 其他 harness：前缀可能是 `deepwiki.` `deepwiki:` 或直接 `read_wiki_structure`
+
+工具可用就直接进 Step 1，别多问。
+
+#### 不可用时：帮用户装，别甩一条命令走人
+
+这是小白第一次用就会卡住的地方。**先判断当前跑在哪个 harness 里**（用 `which` 探测 CLI，或看工具命名风格），再给对应的装法：
+
+**Claude Code**（`which claude` 有结果）：
 
 ```bash
 claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp
 ```
 
-跑完告诉用户：**装好了，但需要重启一下 Claude Code 会话（`/exit` 后重进）MCP 才会加载，然后把刚才那句话再发一遍就行。** 说清楚"要重启"和"重启后怎么继续"，不要只说"请安装后重试"。
+**Codex**（存在 `~/.codex/config.toml`）：往配置文件里追加一段。这是用户的**全局配置**，改之前先说一声再动；先 `grep deepwiki` 确认没配过，然后追加到文件末尾（新的 `[table]` 头在 EOF 追加是安全的 TOML）：
 
-**不要用 `WebFetch` 或 `gh` 兜底**——本 skill 的内容质量依赖 DeepWiki 的结构化抽取，没有它就不要硬撑出一份低质量幻灯片。
+```toml
+[mcp_servers.deepwiki]
+url = "https://mcp.deepwiki.com/mcp"
+```
+
+**其他 harness**：endpoint 是 `https://mcp.deepwiki.com/mcp`（streamable HTTP，无需本地进程、不用 API key），按该 harness 自己的 MCP 配置方式加进去即可。
+
+装完统一告诉用户三件事，缺一不可：
+
+1. **装好了**（以及改了哪个文件）
+2. **需要重启会话** MCP 才会加载（Claude Code 是 `/exit` 后重进；Codex 是退出 TUI 重开）
+3. **重启后把刚才那句话原样再发一遍就行**
+
+不要只说"请安装后重试"——用户不知道要重启，也不知道重启后该干嘛。
+
+**不要用 `WebFetch` / `curl` / `gh` 兜底**——本 skill 的内容质量依赖 DeepWiki 的结构化抽取，没有它就不要硬撑出一份低质量幻灯片，直接停在这一步。
 
 ### Step 1: 获取仓库结构
 

@@ -15,17 +15,27 @@ A Claude Code Skill that turns any GitHub repository into **Neobrutalism-style i
 
 **两步搞定 / Two steps:**
 
+**Claude Code:**
+
 ```bash
-# 1. 安装 DeepWiki MCP（本 skill 唯一硬依赖）
-#    Install DeepWiki MCP (the only hard dependency)
+# 1. 安装 DeepWiki MCP（本 skill 唯一硬依赖）/ Install DeepWiki MCP (the only hard dependency)
 claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp
 
-# 2. 克隆 skill 到 Claude Code skills 目录
-#    Clone the skill into Claude Code's skills directory
+# 2. 克隆 skill / Clone the skill
 git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
 ```
 
-**然后重启 Claude Code 会话，在对话里说 / Then restart your Claude Code session and say:**
+**Codex:**
+
+```bash
+# 1. 往 ~/.codex/config.toml 末尾追加 / Append to ~/.codex/config.toml
+printf '\n[mcp_servers.deepwiki]\nurl = "https://mcp.deepwiki.com/mcp"\n' >> ~/.codex/config.toml
+
+# 2. 克隆 skill / Clone the skill
+git clone https://github.com/Trentct/repo-explainer ~/.codex/skills/repo-explainer
+```
+
+**然后重启会话，在对话里说 / Then restart your session and say:**
 
 ```
 讲解仓库 https://github.com/karpathy/nanogpt
@@ -71,34 +81,39 @@ The generated slides feature:
 
 本 skill 强依赖 [DeepWiki MCP](https://mcp.deepwiki.com)。任选一种方式：
 
-**方式 A：HTTP transport（推荐，无需本地进程）/ HTTP transport (recommended, no local process):**
+Endpoint 统一是 `https://mcp.deepwiki.com/mcp`（streamable HTTP，无需本地进程、不用 API key）。按你用的工具选一种：
+
+The endpoint is always `https://mcp.deepwiki.com/mcp` (streamable HTTP, no local process, no API key). Pick the one matching your tool:
+
+**Claude Code:**
 
 ```bash
 claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp
+claude mcp list          # 应该看到 deepwiki ✓ Connected
 ```
 
-**方式 B：手动编辑配置 / Manual config**
+**Codex** — 在 `~/.codex/config.toml` 末尾追加 / append to `~/.codex/config.toml`:
 
-编辑 `~/.claude.json`（或项目的 `.mcp.json`），在 `mcpServers` 下加入：
+```toml
+[mcp_servers.deepwiki]
+url = "https://mcp.deepwiki.com/mcp"
+```
+
+**手动编辑（Claude Code）/ Manual config** — 编辑 `~/.claude.json` 或项目的 `.mcp.json`：
 
 ```json
 {
   "mcpServers": {
-    "deepwiki": {
-      "type": "http",
-      "url": "https://mcp.deepwiki.com/mcp"
-    }
+    "deepwiki": { "type": "http", "url": "https://mcp.deepwiki.com/mcp" }
   }
 }
 ```
 
-**验证 / Verify:**
+**其他 harness / Other harnesses** — 用同一个 endpoint，按各自的 MCP 配置方式加即可。
 
-```bash
-claude mcp list           # 应该看到 deepwiki ✓ Connected
-```
+装完**需要重启会话** MCP 才会加载。如果工具未就绪，本 skill 会在 Step 0 检查、帮你装并说明怎么继续。
 
-在 Claude Code 里发 "列出 deepwiki 工具" 或直接调用 `讲解仓库 ...` 触发即可。如果工具未就绪，本 skill 会在 Step 0 检查并提示。
+Restart your session after installing — MCP servers load at startup. If the tools aren't ready, the skill detects it in Step 0, installs it for you, and tells you how to resume.
 
 > ⚠️ DeepWiki 只索引**公开 GitHub 仓库**。私有仓库需用 DeepWiki 付费版（Devin）。
 > ⚠️ DeepWiki indexes **public GitHub repos only**. Private repos require DeepWiki paid tier (Devin).
@@ -106,12 +121,16 @@ claude mcp list           # 应该看到 deepwiki ✓ Connected
 ### Step 2 — 安装 Skill / Install the Skill
 
 ```bash
+# Claude Code
 git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
+
+# Codex
+git clone https://github.com/Trentct/repo-explainer ~/.codex/skills/repo-explainer
 ```
 
-重启 Claude Code 会话，skill 即可被自动加载（通过 `~/.claude/skills/` 约定）。
+重启会话，skill 即可被自动加载（两边都走 `skills/{name}/SKILL.md` 约定）。
 
-Restart your Claude Code session; the skill loads automatically from `~/.claude/skills/`.
+Restart your session; the skill loads automatically (both tools use the `skills/{name}/SKILL.md` convention).
 
 **验证装好了 / Verify the install** — 在 Claude Code 里输入 `/` ，列表里能看到 `repo-explainer` 就成了。或者直接发一句 `讲解仓库 karpathy/nanoGPT` 试跑。
 
@@ -261,9 +280,9 @@ This skill's Neobrutalism style (palette, fonts, components, SVG helpers) is **h
 
 ## 所需权限 / Required Tools
 
-`SKILL.md` 在 frontmatter 中通过 `allowed-tools` 显式声明所需工具：
+`SKILL.md` 在 frontmatter 中通过 `allowed-tools` 显式声明所需工具（Claude Code 的字段；Codex 会忽略它，不影响加载）：
 
-The skill declares its required tools in frontmatter via `allowed-tools`:
+The skill declares its required tools in frontmatter via `allowed-tools` (a Claude Code field; Codex ignores it harmlessly):
 
 | 工具 / Tool | 用途 / Purpose |
 |---|---|
