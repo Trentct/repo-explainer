@@ -15,25 +15,20 @@ A Claude Code Skill that turns any GitHub repository into **Neobrutalism-style i
 
 **两步搞定 / Two steps:**
 
-**Claude Code:**
-
 ```bash
-# 1. 安装 DeepWiki MCP（本 skill 唯一硬依赖）/ Install DeepWiki MCP (the only hard dependency)
-claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp
-
-# 2. 克隆 skill / Clone the skill
-git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
+npx skills add Trentct/repo-explainer
 ```
 
-**Codex:**
+就这一行。会自动检测你在用的 agent（Claude Code / Codex / …）并装到对应位置。
+加 `-g` 装到全局，加 `-a '*'` 装到所有已检测到的 agent。
 
-```bash
-# 1. 往 ~/.codex/config.toml 末尾追加 / Append to ~/.codex/config.toml
-printf '\n[mcp_servers.deepwiki]\nurl = "https://mcp.deepwiki.com/mcp"\n' >> ~/.codex/config.toml
+That's the whole install. It auto-detects your agent (Claude Code / Codex / …) and installs to the right place.
+Add `-g` for global, `-a '*'` for every detected agent.
 
-# 2. 克隆 skill / Clone the skill
-git clone https://github.com/Trentct/repo-explainer ~/.codex/skills/repo-explainer
-```
+> **唯一的依赖 DeepWiki MCP 不用你操心**——第一次使用时 skill 会自己检测、帮你装好并告诉你重启。
+> 想手动装或者想知道它改了什么，见下面的[安装](#安装--installation)一节。
+>
+> **The one dependency, DeepWiki MCP, installs itself** — on first use the skill detects it's missing, sets it up, and tells you to restart. See [Installation](#安装--installation) to do it by hand.
 
 **然后重启会话，在对话里说 / Then restart your session and say:**
 
@@ -120,6 +115,18 @@ Restart your session after installing — MCP servers load at startup. If the to
 
 ### Step 2 — 安装 Skill / Install the Skill
 
+**推荐 / Recommended:**
+
+```bash
+npx skills add Trentct/repo-explainer
+```
+
+自动检测 agent 并安装。常用参数：`-g` 全局、`-a '*'` 装到所有 agent、`-y` 跳过确认、`-l` 只列出不安装。
+
+Auto-detects your agent. Handy flags: `-g` global, `-a '*'` all agents, `-y` skip prompts, `-l` list only.
+
+**手动 / Manual** — 直接 clone 到对应目录也行：
+
 ```bash
 # Claude Code
 git clone https://github.com/Trentct/repo-explainer ~/.claude/skills/repo-explainer
@@ -139,7 +146,8 @@ Type `/` in Claude Code — if `repo-explainer` shows up in the list, you're set
 ### 升级 / Upgrade
 
 ```bash
-cd ~/.claude/skills/repo-explainer && git pull
+npx skills update repo-explainer      # 用 skills 装的
+cd ~/.claude/skills/repo-explainer && git pull   # 手动 clone 的
 ```
 
 ## 使用方法 / Usage
