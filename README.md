@@ -13,8 +13,6 @@ A Claude Code Skill that turns any GitHub repository into **Neobrutalism-style i
 
 ## 快速开始 / Quick Start
 
-**两步搞定 / Two steps:**
-
 ```bash
 npx skills add Trentct/repo-explainer
 ```
